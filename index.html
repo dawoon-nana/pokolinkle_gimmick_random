@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기믹 랜덤 툴 v11</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23004B3E'/><path d='M20 30 L50 30 L50 20 L70 35 L50 50 L50 40 L20 40 Z' fill='white'/><path d='M80 70 L50 70 L50 80 L30 65 L50 50 L50 60 L80 60 Z' fill='white'/></svg>" type="image/svg+xml">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 60px 40px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+        h1 {
+            color: #1a1a1a;
+            font-size: 50px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .tabs {
+            display: flex;
+            gap: 60px;
+            margin-bottom: 60px;
+            justify-content: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .tab {
+            padding: 20px 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 600;
+            color: #999;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .tab:hover {
+            color: #004B3E;
+        }
+        .tab.active {
+            color: #004B3E;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #004B3E;
+        }
+        .content {
+            display: none;
+        }
+        .content.active {
+            display: block;
+        }
+        .refresh-btn {
+            display: block;
+            margin: 0 auto 60px;
+            padding: 18px 60px;
+            background: #004B3E;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .refresh-btn:hover {
+            background: #003529;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 75, 62, 0.2);
+        }
+        
+        /* 랜덤 스타일 */
+        .random-result {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .gimmick-card {
+            background: #f8f9fa;
+            padding: 28px;
+            border-radius: 8px;
+            text-align: center;
+            color: #1a1a1a;
+            font-size: 22px;
+            font-weight: 600;
+            border: 1px solid #e5e5e5;
+            transition: all 0.3s;
+        }
+        .gimmick-card:hover {
+            border-color: #004B3E;
+            background: #f0f5f4;
+        }
+        
+        /* 셔플 스타일 */
+        .shuffle-container {
+            display: grid;
+            grid-template-columns: 2.5fr 1fr;
+            gap: 40px;
+        }
+        .combination-section {
+            background: #ffffff;
+        }
+        .section-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #004B3E;
+        }
+        .combo-block {
+            background: #f8f9fa;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+            transition: all 0.3s;
+        }
+        .combo-block:hover {
+            border-color: #004B3E;
+            background: #f0f5f4;
+        }
+        .combo-item {
+            padding: 12px 16px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #1a1a1a;
+            border: 1px solid #e5e5e5;
+        }
+        .failed-section {
+            background: #ffffff;
+        }
+        .failed-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e5e5e5;
+        }
+        .failed-item {
+            padding: 14px 18px;
+            margin: 12px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #666;
+            border: 1px solid #e5e5e5;
+        }
+        
+        /* 구성 스타일 */
+        .composition-levels {
+            margin-bottom: 80px;
+        }
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .level-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+        }
+        .level-header {
+            font-weight: 700;
+            color: #004B3E;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 17px;
+        }
+        .level-gimmick {
+            padding: 10px;
+            margin: 6px 0;
+            background: white;
+            border-radius: 6px;
+            font-size: 16px;
+            text-align: center;
+            color: #1a1a1a;
+            border: 1px solid #e5e5e5;
+        }
+        
+        /* 통계 스타일 */
+        .stats-section {
+            background: #f8f9fa;
+            padding: 50px;
+            border-radius: 12px;
+            border: 1px solid #e5e5e5;
+        }
+        .stats-title {
+            font-size: 30px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        .stats-highlight {
+            margin-bottom: 40px;
+        }
+        .stats-highlight-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+        .stats-highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e5e5e5;
+        }
+        .stat-card.most {
+            background: #91CCA4;
+            border-color: #91CCA4;
+        }
+        .stat-name {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .stat-card.most .stat-name {
+            color: #004B3E;
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .stat-card:not(.most) .stat-name {
+            color: #666;
+        }
+        .stat-count {
+            font-size: 30px;
+            font-weight: 700;
+        }
+        .stat-card.most .stat-count {
+            color: #004B3E;
+            font-size: 31px;
+        }
+        .stat-card:not(.most) .stat-count {
+            color: #004B3E;
+        }
+        .all-stats {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+        }
+        .all-stats-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .all-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            font-size: 15px;
+        }
+        .all-stat-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e5e5e5;
+        }
+        .all-stat-name {
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .all-stat-count {
+            font-weight: 700;
+            color: #004B3E;
+        }
+        
+        /* 스크롤 버튼 */
+        .scroll-btn {
+            position: fixed;
+            right: 40px;
+            background: #004B3E;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 75, 62, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+            display: none;
+        }
+        .scroll-btn:hover {
+            background: #003529;
+            transform: scale(1.1);
+        }
+        .scroll-top {
+            bottom: 110px;
+        }
+        .scroll-bottom {
+            bottom: 50px;
+        }
+        
+        @media (max-width: 768px) {
+            .shuffle-container {
+                grid-template-columns: 1fr;
+            }
+            .level-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-highlight-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .all-stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>기믹 랜덤 툴</h1>
+        </header>
+        
+        <!-- 탭 -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('random')">랜덤 추출</button>
+            <button class="tab" onclick="showTab('shuffle')">셔플 조합</button>
+            <button class="tab" onclick="showTab('composition')">구성 조합</button>
+        </div>
+        
+        <!-- 랜덤 컨텐츠 -->
+        <div id="random" class="content active">
+            <button class="refresh-btn" onclick="generateRandom()">새로 뽑기</button>
+            <div id="randomResult" class="random-result"></div>
+        </div>
+        
+        <!-- 셔플 컨텐츠 -->
+        <div id="shuffle" class="content">
+            <button class="scroll-btn scroll-bottom" onclick="scrollToBottom()">↓</button>
+            <button class="scroll-btn scroll-top" onclick="scrollToTop()">↑</button>
+            
+            <button class="refresh-btn" onclick="generateShuffle()">다시 섞기</button>
+            <div id="shuffleResult"></div>
+        </div>
+        
+        <!-- 구성 컨텐츠 -->
+        <div id="composition" class="content">
+            <button class="scroll-btn scroll-bottom" onclick="scrollToBottom()">↓</button>
+            <button class="scroll-btn scroll-top" onclick="scrollToTop()">↑</button>
+            
+            <button class="refresh-btn" onclick="generateComposition()">50개 레벨 생성</button>
+            <div id="compositionResult"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 기믹 데이터
+        const GIMMICKS = {
+            point1: ['오븐', '토끼풀화단', '블록박스폭탄', '컬러박스', '플라스크', '노이', '메모판', '캡슐오리박스', '곰인형상자', '사탕병', '양털'],
+            point2: ['버블꽃', '폭탄주머니', '양털바구니', '벽돌', '오로라버블꽃', '램프', '사물함', '분홍꽃화분', '분홍잔디', '캡슐오리'],
+            normal: ['택배박스', '컵', '잔디', '클로버석상', '사과', '카펫', '밤', '진주조개', '석판']
+        };
+        
+        // 레벨 재생성 함수 (인접 레벨 기믹 제외)
+        function regenerateLevel(allLevels, idx, comboMap = null) {
+            console.log(`  레벨 ${idx + 1} 재생성 시도...`);
+            
+            // 인접 레벨 기믹 수집 (앞2, 뒤1)
+            const nearbyGimmicks = new Set();
+            for (let offset of [-2, -1, 1]) {
+                const nearIdx = idx + offset;
+                if (nearIdx >= 0 && nearIdx < allLevels.length) {
+                    allLevels[nearIdx].forEach(g => nearbyGimmicks.add(g));
+                }
+            }
+            
+            console.log(`    제외할 기믹 (인접 레벨): ${Array.from(nearbyGimmicks).join(', ')}`);
+            
+            // 사용 가능한 기믹 풀
+            const availableGimmicks = [...GIMMICKS.normal, ...GIMMICKS.point1].filter(g => !nearbyGimmicks.has(g));
+            
+            if (availableGimmicks.length < 4) {
+                console.log(`    ❌ 사용 가능한 기믹 부족 (${availableGimmicks.length}개)`);
+                return false;
+            }
+            
+            // 최대 50번 시도
+            for (let attempt = 0; attempt < 50; attempt++) {
+                const newCombo = [];
+                const shuffled = shuffleArray([...availableGimmicks]);
+                
+                for (let i = 0; i < Math.min(4, shuffled.length); i++) {
+                    newCombo.push(shuffled[i]);
+                }
+                
+                if (newCombo.length !== 4) continue;
+                
+                // 4-조합 중복 체크
+                if (comboMap) {
+                    const key = newCombo.slice().sort().join('|');
+                    if (comboMap.has(key)) {
+                        continue; // 중복이면 다시 시도
+                    }
+                }
+                
+                // 성공
+                allLevels[idx] = newCombo;
+                
+                // comboMap 업데이트
+                if (comboMap) {
+                    const key = newCombo.slice().sort().join('|');
+                    comboMap.set(key, idx);
+                }
+                
+                console.log(`    ✅ 레벨 ${idx + 1} 재생성 완료: [${newCombo.join(', ')}]`);
+                return true;
+            }
+            
+            console.log(`    ❌ 레벨 ${idx + 1} 재생성 실패 (50번 시도)`);
+            return false;
+        }
+        
+        // 유틸리티 함수
+        function safeClearConsole() {
+            try {
+                if (console.clear) {
+                    console.clear();
+                }
+            } catch (e) {
+                // console.clear 지원 안 하는 환경
+            }
+        }
+        
+        // 충돌하는 기믹만 교체 (세트 규칙 준수)
+        function replaceConflictingGimmicks(allLevels, levelIdx, conflictingGimmicks) {
+            console.log(`  레벨 ${levelIdx + 1}에서 충돌 기믹 교체 시도: [${conflictingGimmicks.join(', ')}]`);
+            
+            const currentCombo = allLevels[levelIdx];
+            
+            // 인접 레벨 기믹 수집 (앞2, 뒤1)
+            const nearbyGimmicks = new Set();
+            for (let offset of [-2, -1, 1]) {
+                const nearIdx = levelIdx + offset;
+                if (nearIdx >= 0 && nearIdx < allLevels.length) {
+                    allLevels[nearIdx].forEach(g => nearbyGimmicks.add(g));
+                }
+            }
+            
+            // 사용 가능한 기믹 (인접 레벨 + 현재 조합 제외)
+            const availableGimmicks = [
+                ...GIMMICKS.normal,
+                ...GIMMICKS.point1,
+                ...GIMMICKS.point2
+            ].filter(g => !nearbyGimmicks.has(g) && !currentCombo.includes(g));
+            
+            console.log(`    사용 가능한 교체 기믹: ${availableGimmicks.join(', ')}`);
+            
+            if (availableGimmicks.length === 0) {
+                console.log(`    ❌ 교체 가능한 기믹 없음`);
+                return false;
+            }
+            
+            // 각 충돌 기믹을 교체
+            for (const conflictGimmick of conflictingGimmicks) {
+                const gimmickIndex = currentCombo.indexOf(conflictGimmick);
+                if (gimmickIndex === -1) continue;
+                
+                // 분홍세트 체크: 분홍꽃화분이나 분홍잔디를 제거하려고 할 때
+                if (conflictGimmick === '분홍꽃화분' || conflictGimmick === '분홍잔디') {
+                    const hasPinkFlower = currentCombo.includes('분홍꽃화분');
+                    const hasPinkGrass = currentCombo.includes('분홍잔디');
+                    
+                    if (hasPinkFlower && hasPinkGrass) {
+                        // 둘 다 있으면 둘 다 제거해야 함
+                        console.log(`    분홍세트 감지: 분홍꽃화분과 분홍잔디 모두 교체`);
+                        
+                        // 분홍꽃화분 교체
+                        let replaced1 = false;
+                        for (const newGimmick of shuffleArray(availableGimmicks)) {
+                            const testCombo = [...currentCombo];
+                            testCombo[currentCombo.indexOf('분홍꽃화분')] = newGimmick;
+                            if (canAddToCombo(testCombo.filter((g, i) => i !== currentCombo.indexOf('분홍꽃화분')), newGimmick)) {
+                                currentCombo[currentCombo.indexOf('분홍꽃화분')] = newGimmick;
+                                replaced1 = true;
+                                break;
+                            }
+                        }
+                        
+                        // 분홍잔디 교체
+                        let replaced2 = false;
+                        for (const newGimmick of shuffleArray(availableGimmicks)) {
+                            if (currentCombo.includes(newGimmick)) continue;
+                            const testCombo = [...currentCombo];
+                            testCombo[currentCombo.indexOf('분홍잔디')] = newGimmick;
+                            if (canAddToCombo(testCombo.filter((g, i) => i !== currentCombo.indexOf('분홍잔디')), newGimmick)) {
+                                currentCombo[currentCombo.indexOf('분홍잔디')] = newGimmick;
+                                replaced2 = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!replaced1 || !replaced2) {
+                            console.log(`    ❌ 분홍세트 교체 실패`);
+                            return false;
+                        }
+                        
+                        allLevels[levelIdx] = currentCombo;
+                        console.log(`    ✅ 분홍세트 교체 완료: [${currentCombo.join(', ')}]`);
+                        return true;
+                    }
+                }
+                
+                // 일반 기믹 교체
+                let replaced = false;
+                const shuffledAvailable = shuffleArray(availableGimmicks);
+                
+                for (const newGimmick of shuffledAvailable) {
+                    // 이미 조합에 있는 기믹은 제외
+                    if (currentCombo.includes(newGimmick)) continue;
+                    
+                    // 임시로 교체해서 테스트
+                    const testCombo = [...currentCombo];
+                    testCombo[gimmickIndex] = newGimmick;
+                    
+                    // 충돌 규칙 체크
+                    if (!canAddToCombo(testCombo.filter((g, i) => i !== gimmickIndex), newGimmick)) {
+                        continue;
+                    }
+                    
+                    // 분홍세트 규칙 체크 (교체 후에도 세트 유지되는지)
+                    const hasPinkFlower = testCombo.includes('분홍꽃화분');
+                    const hasPinkGrass = testCombo.includes('분홍잔디');
+                    if (hasPinkFlower !== hasPinkGrass) {
+                        continue; // 분홍세트 규칙 위반
+                    }
+                    
+                    // 양털세트 규칙 체크
+                    const hasWoolBasket = testCombo.includes('양털바구니');
+                    const hasWool = testCombo.includes('양털');
+                    if (hasWoolBasket && !hasWool) {
+                        continue; // 양털세트 규칙 위반
+                    }
+                    
+                    // 교체 성공
+                    currentCombo[gimmickIndex] = newGimmick;
+                    replaced = true;
+                    console.log(`    ✅ '${conflictGimmick}' → '${newGimmick}'로 교체`);
+                    break;
+                }
+                
+                if (!replaced) {
+                    console.log(`    ❌ '${conflictGimmick}' 교체 실패`);
+                    return false;
+                }
+            }
+            
+            allLevels[levelIdx] = currentCombo;
+            console.log(`    ✅ 최종 조합: [${currentCombo.join(', ')}]`);
+            return true;
+        }
+        
+        // 한 레벨만 재생성 (인접 레벨 기믹 제외)
+        function regenerateLevel(allLevels, idx, existingCombos = new Map()) {
+            console.log(`  레벨 ${idx + 1} 재생성 시도...`);
+            
+            // 앞 2레벨, 뒤 1레벨의 기믹 수집
+            const nearbyGimmicks = new Set();
+            for (let offset of [-2, -1, 1]) {
+                const nearIdx = idx + offset;
+                if (nearIdx >= 0 && nearIdx < allLevels.length) {
+                    allLevels[nearIdx].forEach(g => nearbyGimmicks.add(g));
+                }
+            }
+            
+            console.log(`    제외할 기믹 (인접 레벨): ${Array.from(nearbyGimmicks).join(', ')}`);
+            
+            // 사용 가능한 기믹
+            const availableGimmicks = [
+                ...GIMMICKS.normal,
+                ...GIMMICKS.point1,
+                ...GIMMICKS.point2
+            ].filter(g => !nearbyGimmicks.has(g));
+            
+            if (availableGimmicks.length < 4) {
+                console.log(`    ❌ 사용 가능한 기믹 부족 (${availableGimmicks.length}개)`);
+                return false; // null 대신 false 반환
+            }
+            
+            // 최대 50번 시도
+            for (let attempt = 0; attempt < 50; attempt++) {
+                const shuffled = shuffleArray([...availableGimmicks]);
+                const newCombo = shuffled.slice(0, 4);
+                
+                // 충돌 규칙 체크 (각 기믹이 서로 충돌하지 않는지)
+                let hasConflict = false;
+                for (let i = 0; i < newCombo.length; i++) {
+                    if (!canAddToCombo(newCombo.filter((g, idx) => idx !== i), newCombo[i])) {
+                        hasConflict = true;
+                        break;
+                    }
+                }
+                if (hasConflict) continue;
+                
+                // 세트 규칙 체크
+                const hasPinkFlower = newCombo.includes('분홍꽃화분');
+                const hasPinkGrass = newCombo.includes('분홍잔디');
+                if (hasPinkFlower !== hasPinkGrass) {
+                    continue; // 분홍세트 규칙 위반
+                }
+                
+                const hasWoolBasket = newCombo.includes('양털바구니');
+                const hasWool = newCombo.includes('양털');
+                if (hasWoolBasket && !hasWool) {
+                    continue; // 양털세트 규칙 위반
+                }
+                
+                // 4-조합 중복 체크
+                const key = newCombo.slice().sort().join('|');
+                if (!existingCombos.has(key)) {
+                    allLevels[idx] = newCombo; // ✅ 직접 업데이트!
+                    existingCombos.set(key, idx); // ✅ Map도 업데이트!
+                    console.log(`    ✅ 레벨 ${idx + 1} 재생성 성공: [${newCombo.join(', ')}]`);
+                    return true; // 성공
+                }
+            }
+            
+            console.log(`    ❌ 레벨 ${idx + 1} 재생성 실패 (50번 시도)`);
+            return false; // 실패
+        }
+        
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
+        function canAddToCombo(combo, gimmick) {
+            const bubbles = ['플라스크', '오로라버블꽃', '버블꽃'];
+            if (bubbles.includes(gimmick) && combo.some(g => bubbles.includes(g))) {
+                return false;
+            }
+            
+            if (gimmick === '노이' && combo.includes('캡슐오리박스')) return false;
+            if (gimmick === '캡슐오리박스' && combo.includes('노이')) return false;
+            
+            // 캡슐오리 ↔ 캡슐오리박스 충돌
+            if (gimmick === '캡슐오리' && combo.includes('캡슐오리박스')) return false;
+            if (gimmick === '캡슐오리박스' && combo.includes('캡슐오리')) return false;
+            
+            const carpetIncompatible = ['잔디', '분홍잔디', '분홍꽃화분', '석판', '토끼풀화단'];
+            if (gimmick === '카펫' && combo.some(g => carpetIncompatible.includes(g))) return false;
+            if (combo.includes('카펫') && carpetIncompatible.includes(gimmick)) return false;
+            
+            // 분홍 기믹 충돌
+            const pinkIncompatible = ['카펫', '잔디', '석판'];
+            if ((gimmick === '분홍꽃화분' || gimmick === '분홍잔디') && combo.some(g => pinkIncompatible.includes(g))) return false;
+            if ((combo.includes('분홍꽃화분') || combo.includes('분홍잔디')) && pinkIncompatible.includes(gimmick)) return false;
+            
+            return true;
+        }
+        
+        // 랜덤 추출
+        function generateRandom() {
+            safeClearConsole(); // 안전하게 콘솔 클리어
+            const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
+            let result = null;
+            let attempts = 0;
+            
+            while (!result && attempts < 100) {
+                result = tryGenerateRandomCombo(allGimmicks);
+                attempts++;
+            }
+            
+            displayRandomResult(result || ['조합 생성 실패']);
+        }
+        
+        function tryGenerateRandomCombo(allGimmicks) {
+            const shuffled = shuffleArray(allGimmicks);
+            const combo = [];
+            const used = new Set();
+            let maxSize = 4;
+            
+            for (let i = 0; i < shuffled.length && combo.length < maxSize; i++) {
+                if (used.has(i)) continue;
+                
+                const current = shuffled[i];
+                
+                if (!canAddToCombo(combo, current)) continue;
+                
+                combo.push(current);
+                used.add(i);
+                
+                if (current === '폭탄주머니') maxSize = 5;
+                
+                // 세트 찾기
+                if (current === '분홍꽃화분' && !combo.includes('분홍잔디')) {
+                    const idx = shuffled.findIndex((g, j) => !used.has(j) && g === '분홍잔디');
+                    if (idx !== -1 && combo.length < maxSize) {
+                        combo.push('분홍잔디');
+                        used.add(idx);
+                    } else {
+                        combo.pop();
+                        used.delete(i);
+                        continue;
+                    }
+                }
+                
+                if (current === '분홍잔디' && !combo.includes('분홍꽃화분')) {
+                    const idx = shuffled.findIndex((g, j) => !used.has(j) && g === '분홍꽃화분');
+                    if (idx !== -1 && combo.length < maxSize) {
+                        combo.push('분홍꽃화분');
+                        used.add(idx);
+                    } else {
+                        combo.pop();
+                        used.delete(i);
+                        continue;
+                    }
+                }
+                
+                if (current === '양털바구니' && !combo.includes('양털')) {
+                    const idx = shuffled.findIndex((g, j) => !used.has(j) && g === '양털');
+                    if (idx !== -1 && combo.length < maxSize) {
+                        combo.push('양털');
+                        used.add(idx);
+                    } else {
+                        combo.pop();
+                        used.delete(i);
+                        continue;
+                    }
+                }
+            }
+            
+            return combo.length >= 4 ? combo : null;
+        }
+        
+        function displayRandomResult(result) {
+            const container = document.getElementById('randomResult');
+            container.innerHTML = result.map(g => `<div class="gimmick-card">${g}</div>`).join('');
+        }
+        
+        // 셔플 조합
+        function generateShuffle() {
+            safeClearConsole(); // 안전하게 콘솔 클리어
+            const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
+            const shuffled = shuffleArray(allGimmicks);
+            const used = new Array(shuffled.length).fill(false);
+            const yangUsed = new Set();
+            let yangAloneUsed = false;
+            let yangWithBasketUsed = false;
+            const combinations = [];
+            let currentIdx = 0;
+            
+            while (currentIdx < shuffled.length) {
+                while (currentIdx < shuffled.length && used[currentIdx]) currentIdx++;
+                if (currentIdx >= shuffled.length) break;
+                
+                const combo = [];
+                const indices = [];
+                let maxSize = 4;
+                
+                // 남은 기믹 개수 확인
+                const remaining = shuffled.filter((g, i) => !used[i] && (g !== '양털' || !yangUsed.has(i)));
+                
+                for (let j = currentIdx; j < shuffled.length; j++) {
+                    if (!used[j] && !indices.includes(j)) {
+                        const current = shuffled[j];
+                        
+                        if (current === '폭탄주머니' && maxSize < 5) maxSize = 5;
+                        if (!canAddToCombo(combo, current)) continue;
+                        
+                        // 양털 단독 사용 제한
+                        if (current === '양털') {
+                            if (yangWithBasketUsed) continue;
+                            if (yangAloneUsed && !combo.includes('양털바구니')) continue;
+                        }
+                        
+                        // 남은 기믹이 4개 미만이고 현재가 폭탄주머니면 나중에 추가
+                        if (remaining.length < 4 && current === '폭탄주머니') continue;
+                        
+                        if (combo.length >= maxSize) break;
+                        
+                        // 먼저 combo와 indices에 추가
+                        combo.push(current);
+                        indices.push(j);
+                        
+                        if (current === '양털' && !combo.includes('양털바구니')) {
+                            yangUsed.add(j);
+                        }
+                        
+                        // 양털바구니 세트 찾기
+                        if (current === '양털바구니' && !combo.includes('양털') && !yangWithBasketUsed) {
+                            if (combo.length < 4) {
+                                let foundYang = false;
+                                for (let k = 0; k < shuffled.length; k++) {
+                                    if (!indices.includes(k) && !used[k] && shuffled[k] === '양털') {
+                                        combo.push('양털');
+                                        indices.push(k);
+                                        yangUsed.add(k);
+                                        yangWithBasketUsed = true;
+                                        foundYang = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundYang) {
+                                    combo.pop();
+                                    indices.pop();
+                                    continue;
+                                }
+                            } else {
+                                combo.pop();
+                                indices.pop();
+                                continue;
+                            }
+                        }
+                        
+                        // 분홍꽃화분 세트 찾기
+                        if (current === '분홍꽃화분' && !combo.includes('분홍잔디')) {
+                            if (combo.length < 4) {
+                                let foundPinkGrass = false;
+                                for (let k = 0; k < shuffled.length; k++) {
+                                    if (!used[k] && !indices.includes(k) && shuffled[k] === '분홍잔디') {
+                                        combo.push('분홍잔디');
+                                        indices.push(k);
+                                        foundPinkGrass = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundPinkGrass) {
+                                    combo.pop();
+                                    indices.pop();
+                                    continue;
+                                }
+                            } else {
+                                combo.pop();
+                                indices.pop();
+                                continue;
+                            }
+                        }
+                        
+                        // 분홍잔디 세트 찾기
+                        if (current === '분홍잔디' && !combo.includes('분홍꽃화분')) {
+                            if (combo.length < 4) {
+                                let foundPinkFlower = false;
+                                for (let k = 0; k < shuffled.length; k++) {
+                                    if (!used[k] && !indices.includes(k) && shuffled[k] === '분홍꽃화분') {
+                                        combo.push('분홍꽃화분');
+                                        indices.push(k);
+                                        foundPinkFlower = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundPinkFlower) {
+                                    combo.pop();
+                                    indices.pop();
+                                    continue;
+                                }
+                            } else {
+                                combo.pop();
+                                indices.pop();
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
+                // 남은 기믹이 4개 미만이면 폭탄주머니 추가
+                if (remaining.length < 4 && combo.length < 5) {
+                    for (let j = 0; j < shuffled.length; j++) {
+                        if (!used[j] && shuffled[j] === '폭탄주머니') {
+                            combo.push('폭탄주머니');
+                            indices.push(j);
+                            break;
+                        }
+                    }
+                }
+                
+                if (combo.length < 4) break;
+                
+                if (combo.includes('양털') && !combo.includes('양털바구니')) {
+                    yangAloneUsed = true;
+                }
+                
+                if (combo.length >= 4) {
+                    combinations.push(combo);
+                    for (const idx of indices) {
+                        if (shuffled[idx] !== '양털') {
+                            used[idx] = true;
+                        }
+                    }
+                }
+                currentIdx++;
+            }
+            
+            const failed = [];
+            for (let i = 0; i < shuffled.length; i++) {
+                if (shuffled[i] === '양털') {
+                    if (!yangUsed.has(i)) failed.push(shuffled[i]);
+                } else {
+                    if (!used[i]) failed.push(shuffled[i]);
+                }
+            }
+            
+            displayShuffleResult(combinations, failed);
+        }
+        
+        function displayShuffleResult(combinations, failed) {
+            const container = document.getElementById('shuffleResult');
+            let html = '<div class="shuffle-container">';
+            html += '<div class="combination-section"><div class="section-title">조합 성공</div>';
+            
+            combinations.forEach(combo => {
+                html += '<div class="combo-block">';
+                combo.forEach(g => {
+                    html += `<div class="combo-item">${g}</div>`;
+                });
+                html += '</div>';
+            });
+            
+            html += '</div><div class="failed-section"><div class="failed-title">조합 실패</div>';
+            failed.forEach(g => {
+                html += `<div class="failed-item">${g}</div>`;
+            });
+            html += '</div></div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // 구성 조합 (50개 레벨) - 블록별 독립 생성
+        function generateComposition() {
+            safeClearConsole(); // 안전하게 콘솔 클리어
+            
+            // 생성 세션 구분
+            const timestamp = new Date().toLocaleString('ko-KR');
+            console.log('\n\n');
+            console.log('='.repeat(60));
+            console.log(`🎲 새로운 생성 시작 - ${timestamp}`);
+            console.log('='.repeat(60));
+            console.log('방식: 블록별 독립 생성 (5블록 × 10레벨)\n');
+            
+            const allLevels = [];
+            let totalSuccess = true;
+            
+            // 5개 블록 생성 (각 블록별로 재시도)
+            for (let blockIdx = 0; blockIdx < 5; blockIdx++) {
+                let blockSuccess = false;
+                let blockAttempt = 0;
+                const maxBlockAttempts = 20;
+                
+                while (!blockSuccess && blockAttempt < maxBlockAttempts) {
+                    blockAttempt++;
+                    
+                    if (blockAttempt > 1) {
+                        console.log(`\n⚠️ 블록 ${blockIdx + 1} 재시도 ${blockAttempt}/${maxBlockAttempts}...`);
+                    } else {
+                        console.log(`\n블록 ${blockIdx + 1} 생성 중...`);
+                    }
+                    
+                    const blockLevels = generateOneBlock();
+                    if (!blockLevels) {
+                        console.log(`❌ 블록 ${blockIdx + 1} 생성 실패`);
+                        continue;
+                    }
+                    
+                    // 임시로 allLevels에 추가
+                    const tempAllLevels = [...allLevels, ...blockLevels];
+                    
+                    // 2블록부터: 블록 간 인접 레벨 체크 및 교체
+                    if (blockIdx >= 1) {
+                        const fixed = checkAndFixBlockBoundary(tempAllLevels, blockIdx);
+                        if (!fixed) {
+                            console.log(`❌ 블록 ${blockIdx + 1} 경계 체크 실패`);
+                            continue;
+                        }
+                        
+                        // 블록 경계 체크 후 현재 블록 최종 확인
+                        console.log(`\n=== 블록 ${blockIdx + 1} 최종 확인 (경계 체크 완료) ===`);
+                        const currentBlockStart = blockIdx * 10;
+                        for (let i = 0; i < 10; i++) {
+                            const levelNum = currentBlockStart + i + 1;
+                            const combo = tempAllLevels[currentBlockStart + i];
+                            console.log(`레벨 ${levelNum}: [${combo.join(', ')}]`);
+                        }
+                        
+                        // 성공: allLevels 업데이트 (경계 체크로 수정된 tempAllLevels 반영)
+                        allLevels.length = 0;
+                        allLevels.push(...tempAllLevels);
+                    } else {
+                        // 블록 1: 경계 체크 없이 바로 추가
+                        allLevels.push(...blockLevels);
+                    }
+                    
+                    blockSuccess = true;
+                    console.log(`✅ 블록 ${blockIdx + 1} 완료 (현재 ${allLevels.length}개 레벨)`);
+                }
+                
+                if (!blockSuccess) {
+                    console.log(`\n❌ 블록 ${blockIdx + 1} 최종 실패 (${maxBlockAttempts}번 시도)`);
+                    totalSuccess = false;
+                    break;
+                }
+            }
+            
+            if (!totalSuccess) {
+                console.log('\n❌ 50개 레벨 생성 최종 실패');
+                alert('50개 레벨 생성에 실패했습니다. 다시 시도해주세요.');
+                return;
+            }
+            
+            console.log('\n4-조합 중복 체크 중...');
+            
+            // 4-조합 중복 체크 및 교체 (최대 5번 시도)
+            let finalLevels = null;
+            let duplicateCheckAttempt = 0;
+            const maxDuplicateAttempts = 5;
+            
+            while (!finalLevels && duplicateCheckAttempt < maxDuplicateAttempts) {
+                duplicateCheckAttempt++;
+                
+                if (duplicateCheckAttempt > 1) {
+                    console.log(`\n⚠️ 중복 체크 재시도 ${duplicateCheckAttempt}/${maxDuplicateAttempts}`);
+                }
+                
+                const result = checkAndReplaceDuplicatesWithBlockInfo(allLevels);
+                
+                if (result.success) {
+                    finalLevels = result.levels;
+                    break;
+                }
+                
+                // 실패: 중복된 레벨이 속한 블록들만 재생성
+                if (result.duplicateBlocks && result.duplicateBlocks.length > 0) {
+                    // 블록을 순서대로 정렬 (앞에서부터 재생성)
+                    const sortedBlocks = [...result.duplicateBlocks].sort((a, b) => a - b);
+                    console.log(`❌ 중복 교체 실패 → 블록 ${sortedBlocks.map(b => b + 1).join(', ')} 재생성`);
+                    
+                    // 중복된 블록들만 재생성
+                    let allBlocksSuccess = true;
+                    
+                    for (const blockIdx of sortedBlocks) {
+                        let blockSuccess = false;
+                        let blockAttempt = 0;
+                        
+                        while (!blockSuccess && blockAttempt < 10) {
+                            blockAttempt++;
+                            console.log(`  블록 ${blockIdx + 1} 재생성 시도 ${blockAttempt}/10...`);
+                            
+                            const blockLevels = generateOneBlock();
+                            if (!blockLevels) {
+                                continue;
+                            }
+                            
+                            // 해당 블록만 교체
+                            const tempAllLevels = [...allLevels];
+                            for (let i = 0; i < 10; i++) {
+                                tempAllLevels[blockIdx * 10 + i] = blockLevels[i];
+                            }
+                            
+                            // 블록 경계 체크 (이전 블록과)
+                            if (blockIdx >= 1) {
+                                const fixed = checkAndFixBlockBoundary(tempAllLevels, blockIdx);
+                                if (!fixed) {
+                                    continue;
+                                }
+                            }
+                            
+                            // 블록 경계 체크 (다음 블록과) - 다음 블록이 재생성 대상이 아닐 때만
+                            if (blockIdx < 4 && !sortedBlocks.includes(blockIdx + 1)) {
+                                const fixed = checkAndFixBlockBoundary(tempAllLevels, blockIdx + 1);
+                                if (!fixed) {
+                                    continue;
+                                }
+                            }
+                            
+                            // 성공: tempAllLevels를 allLevels로 완전히 교체
+                            allLevels.length = 0;
+                            allLevels.push(...tempAllLevels);
+                            blockSuccess = true;
+                            console.log(`  ✅ 블록 ${blockIdx + 1} 재생성 완료`);
+                        }
+                        
+                        if (!blockSuccess) {
+                            console.log(`  ❌ 블록 ${blockIdx + 1} 재생성 실패`);
+                            allBlocksSuccess = false;
+                            break;
+                        }
+                    }
+                    
+                    if (!allBlocksSuccess) {
+                        console.log('❌ 블록 재생성 실패');
+                        break;
+                    }
+                } else {
+                    console.log('❌ 중복 교체 실패 (교체 가능한 조합 없음)');
+                    break;
+                }
+            }
+            
+            if (!finalLevels) {
+                console.log(`\n❌ 중복 제거 최종 실패 (${maxDuplicateAttempts}번 시도)`);
+                alert('중복 제거에 실패했습니다. 다시 시도해주세요.');
+                return;
+            }
+            
+            console.log('✅ 50개 레벨 모두 생성 완료!');
+            
+            // 최종 50개 레벨 전체 출력 (모든 수정 완료)
+            console.log('\n' + '='.repeat(60));
+            console.log('✅ 최종 50개 레벨 (중복 제거 완료)');
+            console.log('📋 이 결과가 화면에 표시됩니다');
+            console.log('='.repeat(60));
+            for (let i = 0; i < 5; i++) {
+                console.log(`\n[ 블록 ${i + 1} (레벨 ${i*10+1}-${i*10+10}) ]`);
+                for (let j = 0; j < 10; j++) {
+                    const levelNum = i * 10 + j + 1;
+                    const combo = finalLevels[i * 10 + j];
+                    console.log(`  레벨 ${levelNum}: [${combo.join(', ')}]`);
+                }
+            }
+            console.log('\n' + '='.repeat(60));
+            console.log('✅ 생성 완료!');
+            console.log('='.repeat(60) + '\n\n');
+            
+            // 통계 계산
+            const stats = {};
+            const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
+            allGimmicks.forEach(g => stats[g] = 0);
+            finalLevels.forEach(combo => {
+                combo.forEach(g => stats[g]++);
+            });
+            
+            displayCompositionResult(finalLevels, stats);
+        }
+        
+        // 블록 1개 생성 (10개 레벨)
+        function generateOneBlock() {
+            const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
+            
+            // 1단계: 셔플 조합 방식 그대로 적용 (약 7개 조합 생성)
+            const shuffled = shuffleArray(allGimmicks);
+            const used = new Array(shuffled.length).fill(false);
+            const yangUsed = new Set();
+            let yangAloneUsed = false;
+            let yangWithBasketUsed = false;
+            const blockCombos = [];
+            let currentIdx = 0;
+            
+            while (currentIdx < shuffled.length) {
+                while (currentIdx < shuffled.length && used[currentIdx]) currentIdx++;
+                if (currentIdx >= shuffled.length) break;
+                
+                const combo = [];
+                const indices = [];
+                let maxSize = 4;
+                
+                const remaining = shuffled.filter((g, i) => !used[i] && (g !== '양털' || !yangUsed.has(i)));
+                
+                for (let j = currentIdx; j < shuffled.length; j++) {
+                    if (!used[j] && !indices.includes(j)) {
+                        const current = shuffled[j];
+                        
+                        if (current === '폭탄주머니' && maxSize < 5) maxSize = 5;
+                        if (!canAddToCombo(combo, current)) continue;
+                        
+                        if (current === '양털') {
+                            if (yangWithBasketUsed) continue;
+                            if (yangAloneUsed && !combo.includes('양털바구니')) continue;
+                        }
+                        
+                        if (remaining.length < 4 && current === '폭탄주머니') continue;
+                        if (combo.length >= maxSize) break;
+                        
+                        combo.push(current);
+                        indices.push(j);
+                        
+                        if (current === '양털' && !combo.includes('양털바구니')) {
+                            yangUsed.add(j);
+                        }
+                        
+                        // 양털바구니 세트 찾기
+                        if (current === '양털바구니' && !combo.includes('양털') && !yangWithBasketUsed) {
+                            if (combo.length < 4) {
+                                let foundYang = false;
+                                for (let k = 0; k < shuffled.length; k++) {
+                                    if (!indices.includes(k) && !used[k] && shuffled[k] === '양털') {
+                                        combo.push('양털');
+                                        indices.push(k);
+                                        yangUsed.add(k);
+                                        yangWithBasketUsed = true;
+                                        foundYang = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundYang) {
+                                    combo.pop();
+                                    indices.pop();
+                                    continue;
+                                }
+                            } else {
+                                combo.pop();
+                                indices.pop();
+                                continue;
+                            }
+                        }
+                        
+                        // 분홍꽃화분 세트 찾기
+                        if (current === '분홍꽃화분' && !combo.includes('분홍잔디')) {
+                            if (combo.length < 4) {
+                                let foundPinkGrass = false;
+                                for (let k = 0; k < shuffled.length; k++) {
+                                    if (!used[k] && !indices.includes(k) && shuffled[k] === '분홍잔디') {
+                                        combo.push('분홍잔디');
+                                        indices.push(k);
+                                        foundPinkGrass = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundPinkGrass) {
+                                    combo.pop();
+                                    indices.pop();
+                                    continue;
+                                }
+                            } else {
+                                combo.pop();
+                                indices.pop();
+                                continue;
+                            }
+                        }
+                        
+                        // 분홍잔디 세트 찾기
+                        if (current === '분홍잔디' && !combo.includes('분홍꽃화분')) {
+                            if (combo.length < 4) {
+                                let foundPinkFlower = false;
+                                for (let k = 0; k < shuffled.length; k++) {
+                                    if (!used[k] && !indices.includes(k) && shuffled[k] === '분홍꽃화분') {
+                                        combo.push('분홍꽃화분');
+                                        indices.push(k);
+                                        foundPinkFlower = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundPinkFlower) {
+                                    combo.pop();
+                                    indices.pop();
+                                    continue;
+                                }
+                            } else {
+                                combo.pop();
+                                indices.pop();
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
+                // 남은 기믹이 4개 미만이면 폭탄주머니 추가
+                const remainingCheck = shuffled.filter((g, i) => !used[i] && (g !== '양털' || !yangUsed.has(i)));
+                if (remainingCheck.length < 4 && combo.length < 5) {
+                    for (let j = 0; j < shuffled.length; j++) {
+                        if (!used[j] && shuffled[j] === '폭탄주머니') {
+                            combo.push('폭탄주머니');
+                            indices.push(j);
+                            break;
+                        }
+                    }
+                }
+                
+                if (combo.length < 4) break;
+                
+                if (combo.includes('양털') && !combo.includes('양털바구니')) {
+                    yangAloneUsed = true;
+                }
+                
+                if (combo.length >= 4) {
+                    blockCombos.push(combo);
+                    for (const idx of indices) {
+                        if (shuffled[idx] !== '양털') {
+                            used[idx] = true;
+                        }
+                    }
+                }
+                currentIdx++;
+            }
+            
+            // 폭탄주머니 특별 규칙: 남은 기믹에 폭탄주머니가 있으면 마지막 조합에 강제 추가
+            const tempRemaining = [];
+            for (let i = 0; i < shuffled.length; i++) {
+                if (shuffled[i] === '양털') {
+                    if (!yangUsed.has(i)) {
+                        tempRemaining.push(shuffled[i]);
+                    }
+                } else {
+                    if (!used[i]) {
+                        tempRemaining.push(shuffled[i]);
+                    }
+                }
+            }
+            
+            if (tempRemaining.includes('폭탄주머니') && blockCombos.length > 0) {
+                const lastCombo = blockCombos[blockCombos.length - 1];
+                if (lastCombo.length < 5) {
+                    lastCombo.push('폭탄주머니');
+                }
+            }
+            
+            // 실제로 사용된 기믹 계산 (blockCombos 기준)
+            const usedGimmicks = new Set();
+            blockCombos.forEach(combo => {
+                combo.forEach(g => usedGimmicks.add(g));
+            });
+            
+            // 남은 기믹 = 전체 - 사용된 것
+            const remainingGimmicks = allGimmicks.filter(g => !usedGimmicks.has(g));
+            
+            console.log(`\n1단계 완료: ${blockCombos.length}개 조합`);
+            console.log(`=== 1단계 생성된 조합들 ===`);
+            blockCombos.forEach((combo, idx) => {
+                console.log(`  조합 ${idx + 1}: [${combo.join(', ')}]`);
+            });
+            console.log(`\n사용된 기믹 ${usedGimmicks.size}개: [${[...usedGimmicks].join(', ')}]`);
+            console.log(`남은 기믹 ${remainingGimmicks.length}개: [${remainingGimmicks.join(', ')}]`);
+            
+            if (blockCombos.length < 7) {
+                console.log('1단계 실패: 7개 미만 조합 생성');
+                return null;
+            }
+            
+            // 2단계: 남은 기믹 사용 + 범용/포인트1로 3개 조합 추가
+            console.log('\n2단계 시작: 3개 조합 추가');
+            
+            // 조합 8 생성: 남은 기믹 완전 소진 + (조합6,7에 없는 범용/포인트1)
+            const combo6 = blockCombos[blockCombos.length - 2];
+            const combo7 = blockCombos[blockCombos.length - 1];
+            const recentFromStep1 = [...combo6, ...combo7];
+            console.log(`조합 6: [${combo6.join(', ')}]`);
+            console.log(`조합 7: [${combo7.join(', ')}]`);
+            console.log(`→ 조합 8 생성 시 제외할 기믹: [${recentFromStep1.join(', ')}]`);
+            
+            const combo8 = generateCombo8(remainingGimmicks, recentFromStep1);
+            if (!combo8) {
+                console.log('❌ 조합 8 생성 실패');
+                return null;
+            }
+            
+            blockCombos.push(combo8);
+            console.log(`✅ 조합 8: [${combo8.join(', ')}]`);
+            
+            // 조합 9 생성: (조합7,8에 없는 범용/포인트1만)
+            const recentFor9 = [...combo7, ...combo8];
+            console.log(`\n조합 7: [${combo7.join(', ')}]`);
+            console.log(`조합 8: [${combo8.join(', ')}]`);
+            console.log(`→ 조합 9 생성 시 제외할 기믹: [${recentFor9.join(', ')}]`);
+            
+            const combo9 = generateComboFromPool(recentFor9);
+            if (!combo9) {
+                console.log('❌ 조합 9 생성 실패');
+                return null;
+            }
+            
+            blockCombos.push(combo9);
+            console.log(`✅ 조합 9: [${combo9.join(', ')}]`);
+            
+            // 조합 10 생성: (조합8,9에 없는 범용/포인트1만)
+            const recentFor10 = [...combo8, ...combo9];
+            console.log(`\n조합 8: [${combo8.join(', ')}]`);
+            console.log(`조합 9: [${combo9.join(', ')}]`);
+            console.log(`→ 조합 10 생성 시 제외할 기믹: [${recentFor10.join(', ')}]`);
+            
+            const combo10 = generateComboFromPool(recentFor10);
+            if (!combo10) {
+                console.log('❌ 조합 10 생성 실패');
+                return null;
+            }
+            
+            blockCombos.push(combo10);
+            console.log(`✅ 조합 10: [${combo10.join(', ')}]`);
+            
+            console.log(`\n2단계 완료: 총 ${blockCombos.length}개 조합`);
+            
+            // 양털 조합 인접 체크
+            console.log('\n=== 양털 조합 인접 체크 ===');
+            const yangFixed = checkAndFixYangWoolProximity(blockCombos);
+            if (!yangFixed) {
+                console.log('양털 조합 분리 실패');
+                return null;
+            }
+            
+            // 3단계: 순서대로 배치 (이미 순서가 해결되어 있음)
+            console.log('\n3단계: 순서대로 배치 (블록 내부 조합은 이미 순서 확정)');
+            
+            // 최종 생성된 10개 조합 출력 (모든 수정 완료 후)
+            console.log('\n=== 블록 최종 조합 (양털 분리 완료) ===');
+            blockCombos.forEach((combo, idx) => {
+                console.log(`조합 ${idx + 1}: [${combo.join(', ')}]`);
+            });
+            
+            return blockCombos;
+        }
+        
+        // 조합 8 생성: 남은 기믹 완전 소진 + (조합6,7에 없는 범용/포인트1)
+        function generateCombo8(remainingGimmicks, recentGimmicks) {
+            for (let attempt = 0; attempt < 100; attempt++) {
+                const combo = [];
+                let maxSize = 4;
+                
+                // 남은 기믹 우선 추가
+                const shuffledRemaining = shuffleArray(remainingGimmicks);
+                for (const g of shuffledRemaining) {
+                    if (combo.length >= maxSize) break;
+                    if (combo.includes(g)) continue;
+                    if (!canAddToCombo(combo, g)) continue;
+                    
+                    // 세트 처리
+                    if (g === '양털바구니') {
+                        if (remainingGimmicks.includes('양털') && !combo.includes('양털')) {
+                            combo.push('양털바구니', '양털');
+                        }
+                    } else if (g === '분홍꽃화분') {
+                        if (remainingGimmicks.includes('분홍잔디') && !combo.includes('분홍잔디')) {
+                            combo.push('분홍꽃화분', '분홍잔디');
+                        }
+                    } else if (g === '분홍잔디') {
+                        if (remainingGimmicks.includes('분홍꽃화분') && !combo.includes('분홍꽃화분')) {
+                            combo.push('분홍꽃화분', '분홍잔디');
+                        }
+                    } else {
+                        combo.push(g);
+                        if (g === '폭탄주머니') maxSize = 5;
+                    }
+                }
+                
+                // 조합6,7에 없는 범용/포인트1로 채우기
+                const availablePool = [...GIMMICKS.normal, ...GIMMICKS.point1].filter(g => !recentGimmicks.includes(g));
+                const shuffledPool = shuffleArray(availablePool);
+                
+                for (const g of shuffledPool) {
+                    if (combo.length >= maxSize) break;
+                    if (combo.includes(g)) continue;
+                    if (!canAddToCombo(combo, g)) continue;
+                    
+                    combo.push(g);
+                    if (g === '폭탄주머니') maxSize = 5;
+                }
+                
+                // 남은 기믹이 모두 포함되었는지 확인
+                const allRemainingIncluded = remainingGimmicks.every(g => combo.includes(g));
+                
+                if (combo.length >= 4 && allRemainingIncluded) {
+                    return combo;
+                }
+            }
+            
+            return null;
+        }
+        
+        // 조합 9, 10 생성: 최근 2레벨에 없는 범용/포인트1만
+        function generateComboFromPool(recentGimmicks) {
+            for (let attempt = 0; attempt < 100; attempt++) {
+                const combo = [];
+                let maxSize = 4;
+                
+                // 최근에 없는 범용/포인트1만 사용
+                const availablePool = [...GIMMICKS.normal, ...GIMMICKS.point1].filter(g => !recentGimmicks.includes(g));
+                const shuffledPool = shuffleArray(availablePool);
+                
+                for (const g of shuffledPool) {
+                    if (combo.length >= maxSize) break;
+                    if (combo.includes(g)) continue;
+                    if (!canAddToCombo(combo, g)) continue;
+                    
+                    combo.push(g);
+                    if (g === '폭탄주머니') maxSize = 5;
+                }
+                
+                if (combo.length >= 4) {
+                    return combo;
+                }
+            }
+            
+            return null;
+        }
+        
+        // 양털 조합 인접 체크 및 분리
+        function checkAndFixYangWoolProximity(blockCombos) {
+            // 양털 단독 조합과 양털바구니+양털 세트 조합 찾기
+            const yangAloneIndices = [];
+            const yangWithBasketIndices = [];
+            
+            blockCombos.forEach((combo, idx) => {
+                if (combo.includes('양털') && !combo.includes('양털바구니')) {
+                    yangAloneIndices.push(idx);
+                }
+                if (combo.includes('양털바구니') && combo.includes('양털')) {
+                    yangWithBasketIndices.push(idx);
+                }
+            });
+            
+            console.log(`양털 단독 조합: ${yangAloneIndices.length > 0 ? yangAloneIndices.map(i => `조합${i+1}`).join(', ') : '없음'}`);
+            console.log(`양털바구니+양털 세트: ${yangWithBasketIndices.length > 0 ? yangWithBasketIndices.map(i => `조합${i+1}`).join(', ') : '없음'}`);
+            
+            // 인접한 경우 찾기
+            let hasAdjacent = false;
+            
+            for (const aloneIdx of yangAloneIndices) {
+                for (const basketIdx of yangWithBasketIndices) {
+                    if (Math.abs(aloneIdx - basketIdx) === 1) {
+                        hasAdjacent = true;
+                        const earlier = Math.min(aloneIdx, basketIdx);
+                        const later = Math.max(aloneIdx, basketIdx);
+                        
+                        console.log(`\n⚠️ 양털 조합 인접 발견:`);
+                        console.log(`  조합${earlier+1}: [${blockCombos[earlier].join(', ')}]`);
+                        console.log(`  조합${later+1}: [${blockCombos[later].join(', ')}]`);
+                        
+                        // 케이스 1: 조합1이 포함된 경우 (앞으로 못 감)
+                        if (earlier === 0) {
+                            console.log(`\n분리 방법: 조합${earlier+1}은 첫 번째 → 조합${later+1}을 2칸 뒤로 이동`);
+                            if (later + 2 < blockCombos.length) {
+                                const moved = blockCombos.splice(later, 1)[0];
+                                blockCombos.splice(later + 2, 0, moved);
+                                console.log(`  실행: [${moved.join(', ')}]를 조합${later+3} 위치로 이동`);
+                            } else {
+                                console.log(`  ❌ 조합${later+1}을 2칸 뒤로 이동 불가 (공간 부족)`);
+                                return false;
+                            }
+                        }
+                        // 케이스 2: 조합10이 포함된 경우 (뒤로 못 감)
+                        else if (later === blockCombos.length - 1) {
+                            console.log(`\n분리 방법: 조합${later+1}은 마지막 → 조합${earlier+1}을 2칸 앞으로 이동`);
+                            if (earlier - 2 >= 0) {
+                                const moved = blockCombos.splice(earlier, 1)[0];
+                                blockCombos.splice(earlier - 2, 0, moved);
+                                console.log(`  실행: [${moved.join(', ')}]를 조합${earlier-1} 위치로 이동`);
+                            } else {
+                                console.log(`  ❌ 조합${earlier+1}을 2칸 앞으로 이동 불가 (공간 부족)`);
+                                return false;
+                            }
+                        }
+                        // 케이스 3: 일반적인 경우
+                        else {
+                            console.log(`\n분리 방법: 조합${earlier+1}을 1칸 앞으로, 조합${later+1}을 1칸 뒤로`);
+                            
+                            // 앞의 조합을 앞으로 swap
+                            const temp1 = blockCombos[earlier];
+                            blockCombos[earlier] = blockCombos[earlier - 1];
+                            blockCombos[earlier - 1] = temp1;
+                            console.log(`  실행: 조합${earlier+1} ↔ 조합${earlier}`);
+                            
+                            // 뒤의 조합을 뒤로 swap
+                            const temp2 = blockCombos[later];
+                            blockCombos[later] = blockCombos[later + 1];
+                            blockCombos[later + 1] = temp2;
+                            console.log(`  실행: 조합${later+1} ↔ 조합${later+2}`);
+                        }
+                        
+                        // 재귀적으로 다시 체크
+                        console.log('\n재확인 중...');
+                        return checkAndFixYangWoolProximity(blockCombos);
+                    }
+                }
+            }
+            
+            if (!hasAdjacent) {
+                console.log('✅ 양털 조합 인접 없음');
+            }
+            
+            return true;
+        }
+        
+        // 블록 간 인접 레벨 체크 및 교체
+        function checkAndFixBlockBoundary(allLevels, currentBlockIdx) {
+            const prevBlockNum = currentBlockIdx;
+            const currentBlockNum = currentBlockIdx + 1;
+            
+            console.log(`\n=== 블록 경계 체크: 블록${prevBlockNum} <-> 블록${currentBlockNum} ===`);
+            
+            const prevBlockStart = (currentBlockIdx - 1) * 10;
+            const currentBlockStart = currentBlockIdx * 10;
+            
+            const prevLevel9Num = prevBlockStart + 9;
+            const prevLevel10Num = prevBlockStart + 10;
+            const currentLevel1Num = currentBlockStart + 1;
+            const currentLevel2Num = currentBlockStart + 2;
+            
+            // 이전 블록의 마지막 2개 레벨 (조합 9, 10)
+            const prevBlock9 = allLevels[prevBlockStart + 8];
+            const prevBlock10 = allLevels[prevBlockStart + 9];
+            const prevLastTwo = [...prevBlock9, ...prevBlock10];
+            
+            // 현재 블록의 첫 2개 레벨 (조합 1, 2)
+            const currentBlock1 = allLevels[currentBlockStart];
+            const currentBlock2 = allLevels[currentBlockStart + 1];
+            const currentFirstTwo = [...currentBlock1, ...currentBlock2];
+            
+            console.log(`레벨 ${prevLevel9Num}: [${prevBlock9.join(', ')}]`);
+            console.log(`레벨 ${prevLevel10Num}: [${prevBlock10.join(', ')}]`);
+            console.log(`레벨 ${currentLevel1Num}: [${currentBlock1.join(', ')}]`);
+            console.log(`레벨 ${currentLevel2Num}: [${currentBlock2.join(', ')}]`);
+            
+            // 충돌 체크
+            const conflicts = currentFirstTwo.filter(g => prevLastTwo.includes(g));
+            
+            if (conflicts.length === 0) {
+                console.log('✅ 충돌 없음');
+                return true;
+            }
+            
+            console.log(`⚠️ 충돌 발견: [${conflicts.join(', ')}]`);
+            console.log(`블록${currentBlockNum}의 1,2번 조합을 3~10번 중에서 교체 시도...`);
+            
+            // 현재 블록의 3~10번 조합 중에서 교체할 2개 찾기
+            const candidates = [];
+            for (let i = 2; i < 10; i++) {
+                const candidateCombo = allLevels[currentBlockStart + i];
+                const hasConflict = candidateCombo.some(g => prevLastTwo.includes(g));
+                
+                if (!hasConflict) {
+                    candidates.push(i);
+                }
+            }
+            
+            console.log(`교체 가능한 조합 (블록${currentBlockNum} 내): [${candidates.map(i => i + 1).join(', ')}]`);
+            
+            if (candidates.length < 2) {
+                console.log('❌ 교체 가능한 조합이 2개 미만');
+                return false;
+            }
+            
+            // 처음 2개 선택하여 교체
+            const swap1 = candidates[0];
+            const swap2 = candidates[1];
+            
+            console.log(`교체: 레벨${currentLevel1Num}(조합1) ↔ 레벨${currentBlockStart + swap1 + 1}(조합${swap1 + 1})`);
+            console.log(`교체: 레벨${currentLevel2Num}(조합2) ↔ 레벨${currentBlockStart + swap2 + 1}(조합${swap2 + 1})`);
+            
+            // Swap
+            const temp1 = allLevels[currentBlockStart];
+            const temp2 = allLevels[currentBlockStart + 1];
+            
+            allLevels[currentBlockStart] = allLevels[currentBlockStart + swap1];
+            allLevels[currentBlockStart + 1] = allLevels[currentBlockStart + swap2];
+            
+            allLevels[currentBlockStart + swap1] = temp1;
+            allLevels[currentBlockStart + swap2] = temp2;
+            
+            console.log('✅ 교체 완료');
+            
+            // 교체 후 재확인
+            const newFirst1 = allLevels[currentBlockStart];
+            const newFirst2 = allLevels[currentBlockStart + 1];
+            const newFirstTwo = [...newFirst1, ...newFirst2];
+            const newConflicts = newFirstTwo.filter(g => prevLastTwo.includes(g));
+            
+            console.log(`교체 후 레벨${currentLevel1Num}: [${newFirst1.join(', ')}]`);
+            console.log(`교체 후 레벨${currentLevel2Num}: [${newFirst2.join(', ')}]`);
+            
+            if (newConflicts.length > 0) {
+                console.log(`⚠️ 교체 후에도 충돌: [${newConflicts.join(', ')}]`);
+                return false;
+            }
+            
+            console.log('✅ 교체 후 충돌 없음 확인');
+            
+            // Swap 후 양털 조합 인접 체크 (현재 블록만)
+            console.log(`\n블록${currentBlockNum} 양털 조합 인접 재체크 중...`);
+            
+            // 현재 블록의 조합만 추출
+            const currentBlockCombos = [];
+            for (let i = 0; i < 10; i++) {
+                currentBlockCombos.push(allLevels[currentBlockStart + i]);
+            }
+            
+            // 양털 인접 체크
+            const yangFixed = checkAndFixYangWoolProximity(currentBlockCombos);
+            if (!yangFixed) {
+                console.log(`❌ 블록${currentBlockNum} 양털 조합 분리 실패`);
+                return false;
+            }
+            
+            // 수정된 조합을 다시 allLevels에 반영
+            for (let i = 0; i < 10; i++) {
+                allLevels[currentBlockStart + i] = currentBlockCombos[i];
+            }
+            
+            // Swap 후 블록 내부 인접성 체크 (최근 2레벨 분산 규칙)
+            console.log(`\n블록${currentBlockNum} 내부 인접성 체크 중...`);
+            
+            let i = 0;
+            let samePositionRetry = 0; // 같은 위치 재시도 카운터
+            const maxSamePositionRetry = 20; // 같은 위치 최대 재시도
+            
+            while (i < 9) { // 조합 1-9까지 (10은 다음 블록과 체크됨)
+                const levelIdx = currentBlockStart + i;
+                const nextLevelIdx = levelIdx + 1;
+                
+                const currentCombo = allLevels[levelIdx];
+                const nextCombo = allLevels[nextLevelIdx];
+                
+                // 겹치는 기믹 찾기
+                const overlap = currentCombo.filter(g => nextCombo.includes(g));
+                
+                if (overlap.length > 0) {
+                    console.log(`⚠️ 레벨${levelIdx + 1} ↔ 레벨${nextLevelIdx + 1} 충돌: [${overlap.join(', ')}]`);
+                    
+                    // 같은 위치에서 너무 많이 재시도하면 블록 재생성
+                    if (samePositionRetry >= maxSamePositionRetry) {
+                        console.log(`❌ 레벨${levelIdx + 1}-${nextLevelIdx + 1} 재시도 한계 초과 (${maxSamePositionRetry}번)`);
+                        return false;
+                    }
+                    
+                    console.log(`  레벨${nextLevelIdx + 1}에서 충돌 기믹 교체... (재시도 ${samePositionRetry + 1}/${maxSamePositionRetry})`);
+                    
+                    // 충돌하는 기믹만 교체
+                    if (!replaceConflictingGimmicks(allLevels, nextLevelIdx, overlap)) {
+                        console.log(`  ❌ 레벨${nextLevelIdx + 1} 충돌 기믹 교체 실패`);
+                        return false;
+                    }
+                    
+                    // 교체 후 같은 인덱스를 다시 체크 (교체한 기믹도 충돌할 수 있음)
+                    console.log(`  레벨${levelIdx + 1} ↔ 레벨${nextLevelIdx + 1} 재확인...`);
+                    samePositionRetry++;
+                    continue; // while문 처음부터 (i는 그대로)
+                }
+                
+                // 충돌 없으면 다음으로
+                i++;
+                samePositionRetry = 0; // 위치 이동 시 카운터 리셋
+            }
+            
+            console.log('✅ 블록 내부 인접성 체크 완료');
+            return true;
+        }
+        
+        // 4단계: 4-조합 중복 체크 및 레벨 재생성
+        function checkAndReplaceDuplicatesWithBlockInfo(allLevels) {
+            const comboMap = new Map();
+            const duplicates = [];
+            
+            // 중복 찾기
+            allLevels.forEach((combo, idx) => {
+                const key = combo.slice().sort().join('|');
+                if (comboMap.has(key)) {
+                    duplicates.push(idx); // 뒤에 나온 것만 추가
+                } else {
+                    comboMap.set(key, idx);
+                }
+            });
+            
+            if (duplicates.length === 0) {
+                console.log('✅ 중복 없음');
+                return { success: true, levels: allLevels };
+            }
+            
+            console.log(`⚠️ 중복 발견: ${duplicates.length}개 레벨 (${duplicates.map(i => i + 1).join(', ')})`);
+            
+            // 중복된 레벨들이 속한 블록 정보 출력
+            const duplicateBlocksInfo = new Map();
+            duplicates.forEach(dupIdx => {
+                const blockIdx = Math.floor(dupIdx / 10);
+                if (!duplicateBlocksInfo.has(blockIdx)) {
+                    duplicateBlocksInfo.set(blockIdx, []);
+                }
+                duplicateBlocksInfo.get(blockIdx).push(dupIdx + 1);
+            });
+            
+            console.log('중복 레벨이 속한 블록:');
+            duplicateBlocksInfo.forEach((levels, blockIdx) => {
+                console.log(`  블록 ${blockIdx + 1} (레벨 ${blockIdx*10+1}-${blockIdx*10+10}): 레벨 ${levels.join(', ')}`);
+            });
+            
+            // 중복된 레벨들 재생성
+            console.log('\n중복된 레벨 재생성 시도...');
+            
+            for (const dupIdx of duplicates) {
+                console.log(`\n레벨 ${dupIdx + 1} 재생성 중...`);
+                
+                // 최대 20번 시도
+                let regenerateSuccess = false;
+                for (let attempt = 0; attempt < 20; attempt++) {
+                    // 이전 조합 키 제거
+                    const oldKey = allLevels[dupIdx].slice().sort().join('|');
+                    if (comboMap.get(oldKey) === dupIdx) {
+                        comboMap.delete(oldKey);
+                    }
+                    
+                    // 재생성
+                    if (regenerateLevel(allLevels, dupIdx, comboMap)) {
+                        regenerateSuccess = true;
+                        break;
+                    }
+                }
+                
+                if (!regenerateSuccess) {
+                    console.log(`❌ 레벨 ${dupIdx + 1} 재생성 실패`);
+                    
+                    // 실패한 레벨이 속한 블록 반환 (블록 재생성용)
+                    const failedBlocks = Array.from(duplicateBlocksInfo.keys());
+                    return { 
+                        success: false, 
+                        duplicateBlocks: failedBlocks
+                    };
+                }
+            }
+            
+            console.log('\n✅ 모든 중복 레벨 재생성 완료');
+            return { success: true, levels: allLevels };
+        }
+        
+        // 4단계: 4-조합 중복 체크 및 교체 (기존 함수 - 호환성 유지)
+        function checkAndReplaceDuplicates(allLevels) {
+            const result = checkAndReplaceDuplicatesWithBlockInfo(allLevels);
+            return result.success ? result.levels : null;
+        }
+        
+        function generateReplacementCombo(gimmicks, existingCombos) {
+            const shuffled = shuffleArray(gimmicks);
+            const combo = [];
+            const used = new Set();
+            let maxSize = 4;
+            
+            for (let i = 0; i < shuffled.length && combo.length < maxSize; i++) {
+                if (used.has(i)) continue;
+                
+                const current = shuffled[i];
+                if (combo.includes(current)) continue;
+                if (!canAddToCombo(combo, current)) continue;
+                
+                combo.push(current);
+                used.add(i);
+                
+                if (current === '폭탄주머니') maxSize = 5;
+            }
+            
+            if (combo.length < 4) return null;
+            
+            // 중복 체크
+            const key = combo.slice().sort().join('|');
+            if (existingCombos.has(key)) return null;
+            
+            return combo;
+        }
+        
+        function displayCompositionResult(levels, stats) {
+            const container = document.getElementById('compositionResult');
+            let html = '<div class="composition-levels">';
+            
+            // 10개 블록 (각 5개 레벨씩)
+            for (let block = 0; block < 10; block++) {
+                html += '<div class="level-grid">';
+                for (let i = 0; i < 5; i++) {
+                    const levelIdx = block * 5 + i;
+                    if (levelIdx < levels.length) {
+                        html += `<div class="level-card">
+                            <div class="level-header">${levelIdx + 1}</div>`;
+                        levels[levelIdx].forEach(g => {
+                            html += `<div class="level-gimmick">${g}</div>`;
+                        });
+                        html += '</div>';
+                    }
+                }
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            // 통계 계산
+            const sortedStats = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+            const most = sortedStats.slice(0, 5);
+            
+            // 블록별 사용 횟수 계산
+            const blockStats = Array(5).fill(0).map(() => ({}));
+            const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
+            allGimmicks.forEach(g => {
+                blockStats.forEach(block => block[g] = 0);
+            });
+            
+            levels.forEach((level, idx) => {
+                const blockIdx = Math.floor(idx / 10);
+                level.forEach(g => {
+                    blockStats[blockIdx][g]++;
+                });
+            });
+            
+            // 레벨 위치 계산
+            const levelPositions = {};
+            allGimmicks.forEach(g => levelPositions[g] = []);
+            
+            levels.forEach((level, idx) => {
+                level.forEach(g => {
+                    levelPositions[g].push(idx + 1);
+                });
+            });
+            
+            html += '<div class="stats-section">';
+            html += '<div class="stats-title">기믹 사용 통계</div>';
+            
+            // 가장 많이 등장한 기믹
+            html += '<div class="stats-highlight"><div class="stats-highlight-title">가장 많이 등장한 기믹</div>';
+            html += '<div class="stats-highlight-grid">';
+            most.forEach(([name, count]) => {
+                html += `<div class="stat-card most">
+                    <div class="stat-name">${name}</div>
+                    <div class="stat-count">${count}</div>
+                </div>`;
+            });
+            html += '</div></div>';
+            
+            // 전체 기믹 등장 횟수
+            html += '<div class="all-stats"><div class="all-stats-title">전체 기믹 등장 횟수</div>';
+            html += '<div class="all-stats-grid">';
+            sortedStats.forEach(([name, count]) => {
+                html += `<div class="all-stat-item">
+                    <div class="all-stat-name">${name}</div>
+                    <div class="all-stat-count">${count}회</div>
+                </div>`;
+            });
+            html += '</div></div>';
+            
+            // 블록별 사용 횟수
+            html += '<div class="block-stats" style="margin-top: 40px;">';
+            html += '<div class="all-stats-title" style="font-size: 19px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">블록별 기믹 사용 횟수</div>';
+            
+            for (let blockIdx = 0; blockIdx < 5; blockIdx++) {
+                const blockStart = blockIdx * 10 + 1;
+                const blockEnd = blockIdx * 10 + 10;
+                html += `<div style="margin-bottom: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e5e5e5;">`;
+                html += `<div style="font-weight: 700; color: #004B3E; margin-bottom: 15px; font-size: 16px;">블록 ${blockIdx + 1} (레벨 ${blockStart}-${blockEnd})</div>`;
+                html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; font-size: 14px;">';
+                
+                const blockGimmicks = Object.entries(blockStats[blockIdx])
+                    .filter(([name, count]) => count > 0)
+                    .sort((a, b) => b[1] - a[1]);
+                
+                blockGimmicks.forEach(([name, count]) => {
+                    html += `<div style="padding: 8px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                        <div style="color: #666; font-size: 13px;">${name}</div>
+                        <div style="font-weight: 700; color: #004B3E; margin-top: 4px;">${count}회</div>
+                    </div>`;
+                });
+                
+                html += '</div></div>';
+            }
+            html += '</div>';
+            
+            // 레벨 위치
+            html += '<div class="level-positions" style="margin-top: 40px;">';
+            html += '<div class="all-stats-title" style="font-size: 19px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">각 기믹 등장 레벨</div>';
+            
+            sortedStats.forEach(([name, count]) => {
+                if (count > 0) {
+                    html += `<div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e5e5e5;">`;
+                    html += `<div style="font-weight: 700; color: #004B3E; margin-bottom: 8px; font-size: 15px;">${name} (${count}회)</div>`;
+                    html += `<div style="color: #666; font-size: 14px; line-height: 1.8;">`;
+                    html += levelPositions[name].join(', ');
+                    html += '</div></div>';
+                }
+            });
+            
+            html += '</div>';
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // 탭 전환
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            const scrollBtns = document.querySelectorAll('.scroll-btn');
+            if (tabName === 'composition' || tabName === 'shuffle') {
+                scrollBtns.forEach(btn => btn.style.display = 'block');
+                updateScrollButtons();
+            } else {
+                scrollBtns.forEach(btn => btn.style.display = 'none');
+            }
+        }
+        
+        // 스크롤 버튼
+        function scrollToTop() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+        
+        function scrollToBottom() {
+            window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+        }
+        
+        function updateScrollButtons() {
+            const scrollTop = document.querySelector('.scroll-top');
+            const scrollBottom = document.querySelector('.scroll-bottom');
+            
+            if (window.scrollY > 300) {
+                scrollTop.style.display = 'block';
+            } else {
+                scrollTop.style.display = 'none';
+            }
+            
+            if (window.scrollY < document.body.scrollHeight - window.innerHeight - 300) {
+                scrollBottom.style.display = 'block';
+            } else {
+                scrollBottom.style.display = 'none';
+            }
+        }
+        
+        window.addEventListener('scroll', updateScrollButtons);
+        
+        // 페이지 로드 시 랜덤 생성
+        window.addEventListener('load', () => {
+            generateRandom();
+        });
+    </script>
+</body>
+</html>
