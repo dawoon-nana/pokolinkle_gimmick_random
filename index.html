@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기믹 랜덤 조합</title>
+    <title>기믹 랜덤 조합 v12</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23004B3E'/><path d='M20 30 L50 30 L50 20 L70 35 L50 50 L50 40 L20 40 Z' fill='white'/><path d='M80 70 L50 70 L50 80 L30 65 L50 50 L50 60 L80 60 Z' fill='white'/></svg>" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
@@ -964,7 +965,7 @@
             container.innerHTML = html;
         }
         
-        // 구성 조합 (50개 레벨) - 블록별 독립 생성
+        // 구성 조합 (50개 레벨) - 구간별 독립 생성
         function generateComposition() {
             safeClearConsole(); // 안전하게 콘솔 클리어
             
@@ -974,12 +975,12 @@
             console.log('='.repeat(60));
             console.log(`🎲 새로운 생성 시작 - ${timestamp}`);
             console.log('='.repeat(60));
-            console.log('방식: 블록별 독립 생성 (5블록 × 10레벨)\n');
+            console.log('방식: 구간별 독립 생성 (5구간 × 10레벨)\n');
             
             const allLevels = [];
             let totalSuccess = true;
             
-            // 5개 블록 생성 (각 블록별로 재시도)
+            // 5개 구간 생성 (각 구간별로 재시도)
             for (let blockIdx = 0; blockIdx < 5; blockIdx++) {
                 let blockSuccess = false;
                 let blockAttempt = 0;
@@ -989,30 +990,30 @@
                     blockAttempt++;
                     
                     if (blockAttempt > 1) {
-                        console.log(`\n⚠️ 블록 ${blockIdx + 1} 재시도 ${blockAttempt}/${maxBlockAttempts}...`);
+                        console.log(`\n⚠️ 구간 ${blockIdx + 1} 재시도 ${blockAttempt}/${maxBlockAttempts}...`);
                     } else {
-                        console.log(`\n블록 ${blockIdx + 1} 생성 중...`);
+                        console.log(`\n구간 ${blockIdx + 1} 생성 중...`);
                     }
                     
                     const blockLevels = generateOneBlock();
                     if (!blockLevels) {
-                        console.log(`❌ 블록 ${blockIdx + 1} 생성 실패`);
+                        console.log(`❌ 구간 ${blockIdx + 1} 생성 실패`);
                         continue;
                     }
                     
                     // 임시로 allLevels에 추가
                     const tempAllLevels = [...allLevels, ...blockLevels];
                     
-                    // 2블록부터: 블록 간 인접 레벨 체크 및 교체
+                    // 2구간부터: 구간 간 인접 레벨 체크 및 교체
                     if (blockIdx >= 1) {
                         const fixed = checkAndFixBlockBoundary(tempAllLevels, blockIdx);
                         if (!fixed) {
-                            console.log(`❌ 블록 ${blockIdx + 1} 경계 체크 실패`);
+                            console.log(`❌ 구간 ${blockIdx + 1} 경계 체크 실패`);
                             continue;
                         }
                         
-                        // 블록 경계 체크 후 현재 블록 최종 확인
-                        console.log(`\n=== 블록 ${blockIdx + 1} 최종 확인 (경계 체크 완료) ===`);
+                        // 구간 경계 체크 후 현재 구간 최종 확인
+                        console.log(`\n=== 구간 ${blockIdx + 1} 최종 확인 (경계 체크 완료) ===`);
                         const currentBlockStart = blockIdx * 10;
                         for (let i = 0; i < 10; i++) {
                             const levelNum = currentBlockStart + i + 1;
@@ -1024,16 +1025,16 @@
                         allLevels.length = 0;
                         allLevels.push(...tempAllLevels);
                     } else {
-                        // 블록 1: 경계 체크 없이 바로 추가
+                        // 구간 1: 경계 체크 없이 바로 추가
                         allLevels.push(...blockLevels);
                     }
                     
                     blockSuccess = true;
-                    console.log(`✅ 블록 ${blockIdx + 1} 완료 (현재 ${allLevels.length}개 레벨)`);
+                    console.log(`✅ 구간 ${blockIdx + 1} 완료 (현재 ${allLevels.length}개 레벨)`);
                 }
                 
                 if (!blockSuccess) {
-                    console.log(`\n❌ 블록 ${blockIdx + 1} 최종 실패 (${maxBlockAttempts}번 시도)`);
+                    console.log(`\n❌ 구간 ${blockIdx + 1} 최종 실패 (${maxBlockAttempts}번 시도)`);
                     totalSuccess = false;
                     break;
                 }
@@ -1066,13 +1067,13 @@
                     break;
                 }
                 
-                // 실패: 중복된 레벨이 속한 블록들만 재생성
+                // 실패: 중복된 레벨이 속한 구간들만 재생성
                 if (result.duplicateBlocks && result.duplicateBlocks.length > 0) {
-                    // 블록을 순서대로 정렬 (앞에서부터 재생성)
+                    // 구간을 순서대로 정렬 (앞에서부터 재생성)
                     const sortedBlocks = [...result.duplicateBlocks].sort((a, b) => a - b);
-                    console.log(`❌ 중복 교체 실패 → 블록 ${sortedBlocks.map(b => b + 1).join(', ')} 재생성`);
+                    console.log(`❌ 중복 교체 실패 → 구간 ${sortedBlocks.map(b => b + 1).join(', ')} 재생성`);
                     
-                    // 중복된 블록들만 재생성
+                    // 중복된 구간들만 재생성
                     let allBlocksSuccess = true;
                     
                     for (const blockIdx of sortedBlocks) {
@@ -1081,20 +1082,20 @@
                         
                         while (!blockSuccess && blockAttempt < 10) {
                             blockAttempt++;
-                            console.log(`  블록 ${blockIdx + 1} 재생성 시도 ${blockAttempt}/10...`);
+                            console.log(`  구간 ${blockIdx + 1} 재생성 시도 ${blockAttempt}/10...`);
                             
                             const blockLevels = generateOneBlock();
                             if (!blockLevels) {
                                 continue;
                             }
                             
-                            // 해당 블록만 교체
+                            // 해당 구간만 교체
                             const tempAllLevels = [...allLevels];
                             for (let i = 0; i < 10; i++) {
                                 tempAllLevels[blockIdx * 10 + i] = blockLevels[i];
                             }
                             
-                            // 블록 경계 체크 (이전 블록과)
+                            // 구간 경계 체크 (이전 구간과)
                             if (blockIdx >= 1) {
                                 const fixed = checkAndFixBlockBoundary(tempAllLevels, blockIdx);
                                 if (!fixed) {
@@ -1102,7 +1103,7 @@
                                 }
                             }
                             
-                            // 블록 경계 체크 (다음 블록과) - 다음 블록이 재생성 대상이 아닐 때만
+                            // 구간 경계 체크 (다음 구간과) - 다음 구간이 재생성 대상이 아닐 때만
                             if (blockIdx < 4 && !sortedBlocks.includes(blockIdx + 1)) {
                                 const fixed = checkAndFixBlockBoundary(tempAllLevels, blockIdx + 1);
                                 if (!fixed) {
@@ -1114,18 +1115,18 @@
                             allLevels.length = 0;
                             allLevels.push(...tempAllLevels);
                             blockSuccess = true;
-                            console.log(`  ✅ 블록 ${blockIdx + 1} 재생성 완료`);
+                            console.log(`  ✅ 구간 ${blockIdx + 1} 재생성 완료`);
                         }
                         
                         if (!blockSuccess) {
-                            console.log(`  ❌ 블록 ${blockIdx + 1} 재생성 실패`);
+                            console.log(`  ❌ 구간 ${blockIdx + 1} 재생성 실패`);
                             allBlocksSuccess = false;
                             break;
                         }
                     }
                     
                     if (!allBlocksSuccess) {
-                        console.log('❌ 블록 재생성 실패');
+                        console.log('❌ 구간 재생성 실패');
                         break;
                     }
                 } else {
@@ -1148,7 +1149,7 @@
             console.log('📋 이 결과가 화면에 표시됩니다');
             console.log('='.repeat(60));
             for (let i = 0; i < 5; i++) {
-                console.log(`\n[ 블록 ${i + 1} (레벨 ${i*10+1}-${i*10+10}) ]`);
+                console.log(`\n[ 구간 ${i + 1} (레벨 ${i*10+1}-${i*10+10}) ]`);
                 for (let j = 0; j < 10; j++) {
                     const levelNum = i * 10 + j + 1;
                     const combo = finalLevels[i * 10 + j];
@@ -1170,7 +1171,7 @@
             displayCompositionResult(finalLevels, stats);
         }
         
-        // 블록 1개 생성 (10개 레벨)
+        // 구간 1개 생성 (10개 레벨)
         function generateOneBlock() {
             const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
             
@@ -1424,10 +1425,10 @@
             }
             
             // 3단계: 순서대로 배치 (이미 순서가 해결되어 있음)
-            console.log('\n3단계: 순서대로 배치 (블록 내부 조합은 이미 순서 확정)');
+            console.log('\n3단계: 순서대로 배치 (구간 내부 조합은 이미 순서 확정)');
             
             // 최종 생성된 10개 조합 출력 (모든 수정 완료 후)
-            console.log('\n=== 블록 최종 조합 (양털 분리 완료) ===');
+            console.log('\n=== 구간 최종 조합 (양털 분리 완료) ===');
             blockCombos.forEach((combo, idx) => {
                 console.log(`조합 ${idx + 1}: [${combo.join(', ')}]`);
             });
@@ -1605,12 +1606,12 @@
             return true;
         }
         
-        // 블록 간 인접 레벨 체크 및 교체
+        // 구간 간 인접 레벨 체크 및 교체
         function checkAndFixBlockBoundary(allLevels, currentBlockIdx) {
             const prevBlockNum = currentBlockIdx;
             const currentBlockNum = currentBlockIdx + 1;
             
-            console.log(`\n=== 블록 경계 체크: 블록${prevBlockNum} <-> 블록${currentBlockNum} ===`);
+            console.log(`\n=== 구간 경계 체크: 구간${prevBlockNum} <-> 구간${currentBlockNum} ===`);
             
             const prevBlockStart = (currentBlockIdx - 1) * 10;
             const currentBlockStart = currentBlockIdx * 10;
@@ -1620,12 +1621,12 @@
             const currentLevel1Num = currentBlockStart + 1;
             const currentLevel2Num = currentBlockStart + 2;
             
-            // 이전 블록의 마지막 2개 레벨 (조합 9, 10)
+            // 이전 구간의 마지막 2개 레벨 (조합 9, 10)
             const prevBlock9 = allLevels[prevBlockStart + 8];
             const prevBlock10 = allLevels[prevBlockStart + 9];
             const prevLastTwo = [...prevBlock9, ...prevBlock10];
             
-            // 현재 블록의 첫 2개 레벨 (조합 1, 2)
+            // 현재 구간의 첫 2개 레벨 (조합 1, 2)
             const currentBlock1 = allLevels[currentBlockStart];
             const currentBlock2 = allLevels[currentBlockStart + 1];
             const currentFirstTwo = [...currentBlock1, ...currentBlock2];
@@ -1644,9 +1645,9 @@
             }
             
             console.log(`⚠️ 충돌 발견: [${conflicts.join(', ')}]`);
-            console.log(`블록${currentBlockNum}의 1,2번 조합을 3~10번 중에서 교체 시도...`);
+            console.log(`구간${currentBlockNum}의 1,2번 조합을 3~10번 중에서 교체 시도...`);
             
-            // 현재 블록의 3~10번 조합 중에서 교체할 2개 찾기
+            // 현재 구간의 3~10번 조합 중에서 교체할 2개 찾기
             const candidates = [];
             for (let i = 2; i < 10; i++) {
                 const candidateCombo = allLevels[currentBlockStart + i];
@@ -1657,7 +1658,7 @@
                 }
             }
             
-            console.log(`교체 가능한 조합 (블록${currentBlockNum} 내): [${candidates.map(i => i + 1).join(', ')}]`);
+            console.log(`교체 가능한 조합 (구간${currentBlockNum} 내): [${candidates.map(i => i + 1).join(', ')}]`);
             
             if (candidates.length < 2) {
                 console.log('❌ 교체 가능한 조합이 2개 미만');
@@ -1699,10 +1700,10 @@
             
             console.log('✅ 교체 후 충돌 없음 확인');
             
-            // Swap 후 양털 조합 인접 체크 (현재 블록만)
-            console.log(`\n블록${currentBlockNum} 양털 조합 인접 재체크 중...`);
+            // Swap 후 양털 조합 인접 체크 (현재 구간만)
+            console.log(`\n구간${currentBlockNum} 양털 조합 인접 재체크 중...`);
             
-            // 현재 블록의 조합만 추출
+            // 현재 구간의 조합만 추출
             const currentBlockCombos = [];
             for (let i = 0; i < 10; i++) {
                 currentBlockCombos.push(allLevels[currentBlockStart + i]);
@@ -1711,7 +1712,7 @@
             // 양털 인접 체크
             const yangFixed = checkAndFixYangWoolProximity(currentBlockCombos);
             if (!yangFixed) {
-                console.log(`❌ 블록${currentBlockNum} 양털 조합 분리 실패`);
+                console.log(`❌ 구간${currentBlockNum} 양털 조합 분리 실패`);
                 return false;
             }
             
@@ -1720,14 +1721,14 @@
                 allLevels[currentBlockStart + i] = currentBlockCombos[i];
             }
             
-            // Swap 후 블록 내부 인접성 체크 (최근 2레벨 분산 규칙)
-            console.log(`\n블록${currentBlockNum} 내부 인접성 체크 중...`);
+            // Swap 후 구간 내부 인접성 체크 (최근 2레벨 분산 규칙)
+            console.log(`\n구간${currentBlockNum} 내부 인접성 체크 중...`);
             
             let i = 0;
             let samePositionRetry = 0; // 같은 위치 재시도 카운터
             const maxSamePositionRetry = 20; // 같은 위치 최대 재시도
             
-            while (i < 9) { // 조합 1-9까지 (10은 다음 블록과 체크됨)
+            while (i < 9) { // 조합 1-9까지 (10은 다음 구간과 체크됨)
                 const levelIdx = currentBlockStart + i;
                 const nextLevelIdx = levelIdx + 1;
                 
@@ -1740,7 +1741,7 @@
                 if (overlap.length > 0) {
                     console.log(`⚠️ 레벨${levelIdx + 1} ↔ 레벨${nextLevelIdx + 1} 충돌: [${overlap.join(', ')}]`);
                     
-                    // 같은 위치에서 너무 많이 재시도하면 블록 재생성
+                    // 같은 위치에서 너무 많이 재시도하면 구간 재생성
                     if (samePositionRetry >= maxSamePositionRetry) {
                         console.log(`❌ 레벨${levelIdx + 1}-${nextLevelIdx + 1} 재시도 한계 초과 (${maxSamePositionRetry}번)`);
                         return false;
@@ -1765,7 +1766,7 @@
                 samePositionRetry = 0; // 위치 이동 시 카운터 리셋
             }
             
-            console.log('✅ 블록 내부 인접성 체크 완료');
+            console.log('✅ 구간 내부 인접성 체크 완료');
             return true;
         }
         
@@ -1791,7 +1792,7 @@
             
             console.log(`⚠️ 중복 발견: ${duplicates.length}개 레벨 (${duplicates.map(i => i + 1).join(', ')})`);
             
-            // 중복된 레벨들이 속한 블록 정보 출력
+            // 중복된 레벨들이 속한 구간 정보 출력
             const duplicateBlocksInfo = new Map();
             duplicates.forEach(dupIdx => {
                 const blockIdx = Math.floor(dupIdx / 10);
@@ -1801,9 +1802,9 @@
                 duplicateBlocksInfo.get(blockIdx).push(dupIdx + 1);
             });
             
-            console.log('중복 레벨이 속한 블록:');
+            console.log('중복 레벨이 속한 구간:');
             duplicateBlocksInfo.forEach((levels, blockIdx) => {
-                console.log(`  블록 ${blockIdx + 1} (레벨 ${blockIdx*10+1}-${blockIdx*10+10}): 레벨 ${levels.join(', ')}`);
+                console.log(`  구간 ${blockIdx + 1} (레벨 ${blockIdx*10+1}-${blockIdx*10+10}): 레벨 ${levels.join(', ')}`);
             });
             
             // 중복된 레벨들 재생성
@@ -1831,7 +1832,7 @@
                 if (!regenerateSuccess) {
                     console.log(`❌ 레벨 ${dupIdx + 1} 재생성 실패`);
                     
-                    // 실패한 레벨이 속한 블록 반환 (블록 재생성용)
+                    // 실패한 레벨이 속한 구간 반환 (구간 재생성용)
                     const failedBlocks = Array.from(duplicateBlocksInfo.keys());
                     return { 
                         success: false, 
@@ -1882,7 +1883,7 @@
             const container = document.getElementById('compositionResult');
             let html = '<div class="composition-levels">';
             
-            // 10개 블록 (각 5개 레벨씩)
+            // 10개 구간 (각 5개 레벨씩)
             for (let block = 0; block < 10; block++) {
                 html += '<div class="level-grid">';
                 for (let i = 0; i < 5; i++) {
@@ -1905,7 +1906,7 @@
             const sortedStats = Object.entries(stats).sort((a, b) => b[1] - a[1]);
             const most = sortedStats.slice(0, 5);
             
-            // 블록별 사용 횟수 계산
+            // 구간별 사용 횟수 계산
             const blockStats = Array(5).fill(0).map(() => ({}));
             const allGimmicks = [...GIMMICKS.point1, ...GIMMICKS.point2, ...GIMMICKS.normal];
             allGimmicks.forEach(g => {
@@ -1954,15 +1955,15 @@
             });
             html += '</div></div>';
             
-            // 블록별 사용 횟수
+            // 구간별 사용 횟수
             html += '<div class="block-stats" style="margin-top: 40px;">';
-            html += '<div class="all-stats-title" style="font-size: 19px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">블록별 기믹 사용 횟수</div>';
+            html += '<div class="all-stats-title" style="font-size: 19px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">구간별 기믹 사용 횟수</div>';
             
             for (let blockIdx = 0; blockIdx < 5; blockIdx++) {
                 const blockStart = blockIdx * 10 + 1;
                 const blockEnd = blockIdx * 10 + 10;
                 html += `<div style="margin-bottom: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e5e5e5;">`;
-                html += `<div style="font-weight: 700; color: #004B3E; margin-bottom: 15px; font-size: 16px;">블록 ${blockIdx + 1} (레벨 ${blockStart}-${blockEnd})</div>`;
+                html += `<div style="font-weight: 700; color: #004B3E; margin-bottom: 15px; font-size: 16px;">구간 ${blockIdx + 1} (레벨 ${blockStart}-${blockEnd})</div>`;
                 html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; font-size: 14px;">';
                 
                 const blockGimmicks = Object.entries(blockStats[blockIdx])
